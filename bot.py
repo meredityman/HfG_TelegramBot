@@ -2,7 +2,7 @@ from openai import OpenAI
 from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json
 import os
-
+import logging
 
 @dataclass_json
 @dataclass
@@ -95,9 +95,9 @@ class Group_1(Bot):
             api_key=os.getenv("OPENROUTER_API_KEY"),
         )
 
-
         
     def get_completion(self, user_message):
+        print(f"Generating story for user message: {user_message}")
         story = ""
         for m in self.config.cont_messages:
             m = self.config.Message(**m) if isinstance(m, dict) else m
@@ -107,10 +107,14 @@ class Group_1(Bot):
                     "content": self.config.system_prompt
                 }
             ]
-            if story:
-                messages.append({"role": "assistant", "content": story})
+            if story != "":
+                messages.append({"role": "user", "content": story})
+            
 
             messages.append({"role": "user", "content": m.cont_message})
+
+            for message in messages:
+                print(f"{message['role'].upper()}: {message['content'][:100]}...")  # Print the first 100 characters of each message for debugging
 
             completion = self.client.chat.completions.create(
                 model=self.config.model,
@@ -119,5 +123,13 @@ class Group_1(Bot):
 
             )
 
-            story += completion.choices[0].message.content
+            print(f"Generated story segment: {completion.choices[0].message.content}")
+            cont = completion.choices[0].message.content
+            if not cont:
+                print("Received empty content, stopping generation.")
+                print(f"{completion.response_metadata}")
+                break
+            story += cont + "\n"
+        
+        print(f"The story: {story}")
         return story

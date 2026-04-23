@@ -207,7 +207,10 @@ async def handle_message(event):
 
     else:
         bot = bot_class(**bot_config)
-        await event.client.send_message(chat_id, bot.get_completion(event.raw_text))
+
+        message = bot.get_completion(event.raw_text)
+        for m_part in [message[i:i+4096] for i in range(0, len(message), 4096)]:
+            await event.client.send_message(chat_id, m_part)
         await set_active_bot(event.client, chat_id, bot.config.to_dict(), bot_class)
 
 
