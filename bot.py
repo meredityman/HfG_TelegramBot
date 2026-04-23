@@ -100,6 +100,7 @@ class Group_1(Bot):
         print(f"Generating story for user message: {user_message}")
         story = ""
         for m in self.config.cont_messages:
+            print(f"{'*' * 64}")
             m = self.config.Message(**m) if isinstance(m, dict) else m
             messages = [
                 {
@@ -126,8 +127,7 @@ class Group_1(Bot):
             print(f"Generated story segment: {completion.choices[0].message.content}")
             cont = completion.choices[0].message.content
             if not cont:
-                print("Received empty content, stopping generation.")
-                print(f"{completion.response_metadata}")
+                print(f"Received empty content, stopping generation.\n{completion}")
                 break
             story += cont + "\n"
         
